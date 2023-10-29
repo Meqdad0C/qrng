@@ -8,8 +8,8 @@ export async function POST(request: Request) {
     return NextResponse.error()
   }
   const { array_length, data_type, hex_size } = body
-  console.log(body, API_KEY, API_URL)
-  console.log(array_length, data_type, hex_size)
+  // console.log(body, API_KEY, API_URL)
+  // console.log(array_length, data_type, hex_size)
 
   const url = `${API_URL}?length=${array_length}&type=${data_type}&size=${hex_size}`
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     },
   })
   const { data } = await response.json()
-  console.log(data)
+  // console.log(data)
 
   return NextResponse.json(data)
 }

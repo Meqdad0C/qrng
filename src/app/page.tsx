@@ -4,10 +4,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { ModeToggle } from '@/components/theme-toggle'
-import { RadioGroupDemo } from './RadioForm'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { SliderDemo } from './SliderDemo'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -21,6 +21,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { useState } from 'react'
+import { Card } from '@/components/ui/card'
 
 type DataType = 'uint8' | 'uint16' | 'hex8' | 'hex16'
 const DataTypes: DataType[] = ['uint8', 'uint16', 'hex8', 'hex16']
@@ -52,18 +53,49 @@ export function ProfileForm({ setData }) {
     },
   })
 
+  const RadioDescription = ({ type }) => {
+    switch (type) {
+      case 'uint8':
+        return (
+          <FormDescription>
+            Range of 0 to 255.
+          </FormDescription>
+        )
+      case 'uint16':
+        return (
+          <FormDescription>
+            Range of 0 to 65535.
+          </FormDescription>
+        )
+      case 'hex8':
+        return (
+          <FormDescription>
+            Range of 0x00 to 0xff, for Size of 1.
+          </FormDescription>
+        )
+      case 'hex16':
+        return (
+          <FormDescription>
+            Range of 0x0000 to 0xffff. for Size of 1.
+          </FormDescription>
+        )
+      default:
+        return <FormDescription></FormDescription>
+    }
+  }
+
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values)
+    // console.log(values)
     const res = await fetch('/api/', {
       method: 'POST',
       body: JSON.stringify(values),
     })
-    console.log(res)
+    // console.log(res)
     const data = await res.json()
-    console.log(data)
+    // console.log(data)
     let stringified_data = JSON.stringify(data)
     stringified_data = stringified_data.replace(/,/g, ',\n')
     setData(stringified_data)
@@ -127,6 +159,7 @@ export function ProfileForm({ setData }) {
                         <RadioGroupItem value={type} />
                       </FormControl>
                       <FormLabel className="font-normal">{type}</FormLabel>
+                      <RadioDescription type={type} />
                     </FormItem>
                   ))}
                 </RadioGroup>
@@ -136,6 +169,98 @@ export function ProfileForm({ setData }) {
             </FormItem>
           )}
         />
+        <Button type="submit">Generate</Button>
+      </form>
+    </Form>
+  )
+}
+
+const WichmannHillSchema = z.object({
+  seed: z.coerce.number(),
+  array_length: z.coerce.number(),
+})
+
+const ClassicalForm = ({setData}) => {
+  const form = useForm<z.infer<typeof WichmannHillSchema>>({
+    resolver: zodResolver(WichmannHillSchema),
+    defaultValues: {
+      seed: 457428938475,
+      array_length: 10,
+    },
+  })
+  let rnd_state = [0, 0, 0]
+  const seed = (initial_seed) => {
+    const x = initial_seed % 30268
+    initial_seed = (initial_seed - x) / 30268
+    const y = initial_seed % 30306
+    initial_seed = (initial_seed - y) / 30306
+    const z = initial_seed % 30322
+    initial_seed = (initial_seed - z) / 30322
+
+    rnd_state = [x + 1, y + 1, z + 1]
+    // console.log('[seed]', rnd_state);
+    
+  }
+  const random = () => {
+    rnd_state[0] = (171 * rnd_state[0]) % 30269
+    rnd_state[1] = (172 * rnd_state[1]) % 30307
+    rnd_state[2] = (170 * rnd_state[2]) % 30323
+    return (
+      (rnd_state[0] / 30269 + rnd_state[1] / 30307 + rnd_state[2] / 30323) % 1
+    )
+  }
+
+  async function onSubmit(values: z.infer<typeof WichmannHillSchema>) {
+    // console.log(values)
+    seed(values.seed)
+    const data = []
+    for (let i = 0; i < values.array_length; i++) {
+      data.push(random())
+    }
+    // console.log(data)
+    let stringified_data = JSON.stringify(data)
+    stringified_data = stringified_data.replace(/,/g, ',\n')
+    setData(stringified_data)
+
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <FormField
+          control={form.control}
+          name="seed"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Seed:</FormLabel>
+              <FormControl>
+                <Input placeholder="example: 457428938475" {...field} />
+              </FormControl>
+              <FormDescription>
+                Seed for the random number generator.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="array_length"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Array Length:</FormLabel>
+              <FormControl>
+                <Input placeholder="example: 10" {...field} />
+              </FormControl>
+              <FormDescription>
+                Number of elements to generate.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit">Generate</Button>
       </form>
     </Form>
@@ -159,7 +284,27 @@ export default function Home() {
             id="generated-numbers"
           />
         </div>
-        <ProfileForm setData={setData} />
+        <div className="flex flex-col">
+          <Tabs defaultValue="quantum" className="w-[400px]">
+            <TabsList>
+              <TabsTrigger value="quantum">Quantum RNG</TabsTrigger>
+              <TabsTrigger value="classic">Classical RNG</TabsTrigger>
+            </TabsList>
+            <TabsContent value="quantum">
+              Generated in real-time in ANU lab by measuring the quantum
+              fluctuations of the vacuum.
+              <Card className="p-4">
+                <ProfileForm setData={setData} />
+              </Card>
+            </TabsContent>
+            <TabsContent value="classic">
+              The Wichmann-Hill Random Number Algorithm
+              <Card className="p-4">
+                <ClassicalForm setData={setData} />
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
     </div>
   )

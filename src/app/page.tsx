@@ -256,7 +256,7 @@ const ClassicalForm = ({ setData }: SetDataProps) => {
 
         <div className="flex justify-between">
           <Button type="submit">Generate</Button>
-          <Link href={'https://meqdad0c.github.io/qrng/'}>Go to Algorithm Analysis</Link>
+          <Link href={'https://meqdad0c.github.io/qrng/analysis.html'}>Go to Algorithm Analysis</Link>
         </div>
       </form>
     </Form>

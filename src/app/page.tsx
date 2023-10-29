@@ -42,7 +42,7 @@ const formSchema = z.object({
   data_type: z.enum(['uint8', 'uint16', 'hex8', 'hex16']),
 })
 
-export function ProfileForm({ setData }) {
+function ProfileForm({ setData }) {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

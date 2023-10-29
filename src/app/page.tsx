@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Card } from '@/components/ui/card'
 
 type DataType = 'uint8' | 'uint16' | 'hex8' | 'hex16'
@@ -42,7 +42,7 @@ const formSchema = z.object({
   data_type: z.enum(['uint8', 'uint16', 'hex8', 'hex16']),
 })
 
-function ProfileForm({ setData }) {
+function ProfileForm({ setData }:SetDataProps) {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,7 +53,7 @@ function ProfileForm({ setData }) {
     },
   })
 
-  const RadioDescription = ({ type }) => {
+  const RadioDescription = ({ type } : {type:string}) => {
     switch (type) {
       case 'uint8':
         return (
@@ -180,7 +180,12 @@ const WichmannHillSchema = z.object({
   array_length: z.coerce.number(),
 })
 
-const ClassicalForm = ({setData}) => {
+
+type SetDataProps = {
+  setData: React.Dispatch<React.SetStateAction<string>>
+}
+
+const ClassicalForm = ({setData}:SetDataProps) => {
   const form = useForm<z.infer<typeof WichmannHillSchema>>({
     resolver: zodResolver(WichmannHillSchema),
     defaultValues: {
@@ -189,7 +194,7 @@ const ClassicalForm = ({setData}) => {
     },
   })
   let rnd_state = [0, 0, 0]
-  const seed = (initial_seed) => {
+  const seed = (initial_seed : number) => {
     const x = initial_seed % 30268
     initial_seed = (initial_seed - x) / 30268
     const y = initial_seed % 30306

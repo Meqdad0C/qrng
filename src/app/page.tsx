@@ -20,18 +20,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { useState } from 'react'
 
-type DataType = 'uint8' | 'uint16' | 'hex16'
-const DataTypes: DataType[] = ['uint8', 'uint16', 'hex16']
-
-export function TextareaWithLabel() {
-  return (
-    <div className="grid w-full gap-1.5">
-      <Label htmlFor="message">Your message</Label>
-      <Textarea placeholder="Type your message here." id="message" />
-    </div>
-  )
-}
+type DataType = 'uint8' | 'uint16' | 'hex8' | 'hex16'
+const DataTypes: DataType[] = ['uint8', 'uint16', 'hex8', 'hex16']
 
 const formSchema = z.object({
   array_length: z.coerce
@@ -45,11 +37,11 @@ const formSchema = z.object({
       invalid_type_error: 'Hex size must be a number',
     })
     .min(1)
-    .max(1024),
-  data_type: z.enum(['uint8', 'uint16', 'hex16']),
+    .max(10),
+  data_type: z.enum(['uint8', 'uint16', 'hex8', 'hex16']),
 })
 
-export function ProfileForm() {
+export function ProfileForm({ setData }) {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,15 +53,25 @@ export function ProfileForm() {
   })
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values)
+    const res = await fetch('/api/', {
+      method: 'POST',
+      body: JSON.stringify(values),
+    })
+    console.log(res)
+    const data = await res.json()
+    console.log(data)
+    let stringified_data = JSON.stringify(data)
+    stringified_data = stringified_data.replace(/,/g, ',\n')
+    setData(stringified_data)
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <FormField
           control={form.control}
           name="array_length"
@@ -80,7 +82,7 @@ export function ProfileForm() {
                 <Input placeholder="min 1, max 1024" {...field} />
               </FormControl>
               <FormDescription>
-                Enter number of elements to generate. Min 1, Max 1024.
+                Number of elements to generate. Min 1, Max 1024.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -94,10 +96,10 @@ export function ProfileForm() {
             <FormItem>
               <FormLabel>Hex Size:</FormLabel>
               <FormControl>
-                <Input placeholder="min 1, max 1024" {...field} />
+                <Input placeholder="min 1, max 10" {...field} />
               </FormControl>
               <FormDescription>
-                Number of hex characters to in each element. Min 1, Max 1024.
+                Number of hex characters to in each element. Min 1, Max 10.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -141,11 +143,24 @@ export function ProfileForm() {
 }
 
 export default function Home() {
+  const [data, setData] = useState('')
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <ProfileForm />
-      <ModeToggle />
-      <TextareaWithLabel />
-    </main>
+    <div className="max-h-screen">
+      <div className="absolute top-5 right-5">
+        <ModeToggle />
+      </div>
+      <main className="flex min-h-screen items-center justify-between p-24 gap-10">
+        <div className="flex flex-col w-full gap-1.5">
+          <Label htmlFor="generated-numbers">Your Generated Numbers</Label>
+          <Textarea
+            className="w-full min-h-[20rem] max-h-max"
+            value={data}
+            placeholder="Your generated numbers will be here."
+            id="generated-numbers"
+          />
+        </div>
+        <ProfileForm setData={setData} />
+      </main>
+    </div>
   )
 }

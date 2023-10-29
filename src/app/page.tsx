@@ -275,13 +275,13 @@ const ClassicalForm = ({setData}:SetDataProps) => {
 export default function Home() {
   const [data, setData] = useState('')
   return (
-    <div className="max-h-screen">
+    <div className="max-h-screen px-64">
       <div className="absolute top-5 right-5">
         <ModeToggle />
       </div>
       <main className="flex min-h-screen items-center justify-between p-24 gap-10">
         <div className="flex flex-col w-full gap-1.5">
-          <Label htmlFor="generated-numbers">Your Generated Numbers</Label>
+          <Label htmlFor="generated-numbers" className='text-xl'>Generated Numbers</Label>
           <Textarea
             className="w-full min-h-[20rem] max-h-max"
             value={data}

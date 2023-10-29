@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import React, { useState } from 'react'
 import { Card } from '@/components/ui/card'
+import Link from 'next/link'
 
 type DataType = 'uint8' | 'uint16' | 'hex8' | 'hex16'
 const DataTypes: DataType[] = ['uint8', 'uint16', 'hex8', 'hex16']
@@ -42,7 +43,7 @@ const formSchema = z.object({
   data_type: z.enum(['uint8', 'uint16', 'hex8', 'hex16']),
 })
 
-function ProfileForm({ setData }:SetDataProps) {
+function ProfileForm({ setData }: SetDataProps) {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,20 +54,12 @@ function ProfileForm({ setData }:SetDataProps) {
     },
   })
 
-  const RadioDescription = ({ type } : {type:string}) => {
+  const RadioDescription = ({ type }: { type: string }) => {
     switch (type) {
       case 'uint8':
-        return (
-          <FormDescription>
-            Range of 0 to 255.
-          </FormDescription>
-        )
+        return <FormDescription>Range of 0 to 255.</FormDescription>
       case 'uint16':
-        return (
-          <FormDescription>
-            Range of 0 to 65535.
-          </FormDescription>
-        )
+        return <FormDescription>Range of 0 to 65535.</FormDescription>
       case 'hex8':
         return (
           <FormDescription>
@@ -180,12 +173,11 @@ const WichmannHillSchema = z.object({
   array_length: z.coerce.number(),
 })
 
-
 type SetDataProps = {
   setData: React.Dispatch<React.SetStateAction<string>>
 }
 
-const ClassicalForm = ({setData}:SetDataProps) => {
+const ClassicalForm = ({ setData }: SetDataProps) => {
   const form = useForm<z.infer<typeof WichmannHillSchema>>({
     resolver: zodResolver(WichmannHillSchema),
     defaultValues: {
@@ -194,7 +186,7 @@ const ClassicalForm = ({setData}:SetDataProps) => {
     },
   })
   let rnd_state = [0, 0, 0]
-  const seed = (initial_seed : number) => {
+  const seed = (initial_seed: number) => {
     const x = initial_seed % 30268
     initial_seed = (initial_seed - x) / 30268
     const y = initial_seed % 30306
@@ -204,7 +196,6 @@ const ClassicalForm = ({setData}:SetDataProps) => {
 
     rnd_state = [x + 1, y + 1, z + 1]
     // console.log('[seed]', rnd_state);
-    
   }
   const random = () => {
     rnd_state[0] = (171 * rnd_state[0]) % 30269
@@ -226,7 +217,6 @@ const ClassicalForm = ({setData}:SetDataProps) => {
     let stringified_data = JSON.stringify(data)
     stringified_data = stringified_data.replace(/,/g, ',\n')
     setData(stringified_data)
-
   }
 
   return (
@@ -258,15 +248,16 @@ const ClassicalForm = ({setData}:SetDataProps) => {
               <FormControl>
                 <Input placeholder="example: 10" {...field} />
               </FormControl>
-              <FormDescription>
-                Number of elements to generate.
-              </FormDescription>
+              <FormDescription>Number of elements to generate.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit">Generate</Button>
+        <div className="flex justify-between">
+          <Button type="submit">Generate</Button>
+          <Link href={'https://meqdad0c.github.io/qrng/'}>Go to Algorithm Analysis</Link>
+        </div>
       </form>
     </Form>
   )
@@ -275,13 +266,15 @@ const ClassicalForm = ({setData}:SetDataProps) => {
 export default function Home() {
   const [data, setData] = useState('')
   return (
-    <div className="max-h-screen px-64">
+    <div>
       <div className="absolute top-5 right-5">
         <ModeToggle />
       </div>
       <main className="flex min-h-screen items-center justify-between p-24 gap-10">
         <div className="flex flex-col w-full gap-1.5">
-          <Label htmlFor="generated-numbers" className='text-xl'>Generated Numbers</Label>
+          <Label htmlFor="generated-numbers" className="text-xl">
+            Generated Numbers
+          </Label>
           <Textarea
             className="w-full min-h-[20rem] max-h-max"
             value={data}
